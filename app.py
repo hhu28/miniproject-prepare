@@ -61,9 +61,16 @@ def input():
     for i in range(len(selected)):
         items = items + ',' + selected[i]
     
+    return redirect(url_for('plot', name = name, items = items))
+
+@app.route('/plot', methods=['GET','POST'])
+def plot():
+    name = request.args.get('name')
+    items = request.args.get('items')
+    print items
     # get webpage:
     web = 'https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?ticker='+ name + '&qopts.columns=date' + items +'&api_key=vE8zyFxDsKyf5NnGyDdC'
-    #print web
+    print web
     
     # get data
     r = requests.get(web)
@@ -77,37 +84,32 @@ def input():
     
     # convert to dataframe
     df = pd.DataFrame(datadict['data'],  columns= names)
+    print list(df)
+    
+        
+        # check if the post request has the file part
+     #name = request.args.get('name')
+    #df = request.files['file']
+    #df = pd.DataFrame(df)
     #print list(df)
-    return redirect(url_for('plot', name=name, df = df))
-
-
-@app.route('/plot', methods=['GET','POST'])  
-def plot():
-    name = request.args.get('name')
-    df = request.args.get('df')
+    #print df['date']
     
     def datetime(x):
         return np.array(x, dtype=np.datetime64)
 
-    p1 = figure(x_axis_type="datetime", title="Stock Closing Prices")
+    p1 = figure(title="Stock Prices")
     p1.grid.grid_line_alpha=0.3
     p1.xaxis.axis_label = 'Date'
     p1.yaxis.axis_label = 'Price'
 
-    p1.line(datetime(AAPL['date']), AAPL['adj_close'], color='#A6CEE3', legend='AAPL')
-    p1.line(datetime(GOOG['date']), GOOG['adj_close'], color='#B2DF8A', legend='GOOG')
-    p1.line(datetime(IBM['date']), IBM['adj_close'], color='#33A02C', legend='IBM')
-    p1.line(datetime(MSFT['date']), MSFT['adj_close'], color='#FB9A99', legend='MSFT')
+    for i in range(1,len(list(df))):
+        p1.line(df['date'], df['open'])
+    
     p1.legend.location = "top_left"
 
-    aapl = np.array(AAPL['adj_close'])
-    aapl_dates = np.array(AAPL['date'], dtype=np.datetime64)
-
     window_size = 30
-    window = np.ones(window_size)/float(window_size)
-    aapl_avg = np.convolve(aapl, window, 'same')
     
-    script, div = components(p1)
+    #script, div = components(p1)
     
     return render_template("plot.html", name=name)
   
