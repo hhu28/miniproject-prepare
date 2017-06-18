@@ -90,8 +90,8 @@ def plot():
     
     # convert to dataframe
     df = pd.DataFrame(datadict['data'],  columns= names)
-    print df['close']
-    print df['adj_close']
+    #print df['close']
+    #print df['adj_close']
     
     #print df['close']
     # check if the post request has the file part
