@@ -90,7 +90,9 @@ def plot():
     
     # convert to dataframe
     df = pd.DataFrame(datadict['data'],  columns= names)
-         
+    print df['close']
+    print df['adj_close']
+    
     #print df['close']
     # check if the post request has the file part
      #name = request.args.get('name')
@@ -110,15 +112,21 @@ def plot():
     
     colors = ['#A6CEE3', '#B2DF8A', '#33A02C', '#FB9A99']
     
-    plots = []
+    plots = [None]*(len(list(df))-1)
     
     for i in range(1,len(list(df))):
-        plots[i-1].grid.grid_line_alpha=0.3
-        plots[i-1].xaxis.axis_label = 'Date'
-        p1ots[i-1].yaxis.axis_label = 'Price'
-        
         plots[i-1] = figure(x_axis_type="datetime", title=list(df)[i])
-        plots[i-1].line(df['date'], df[list(df)[i]], color=colors[i-1], legend = list(df)[i])
+
+        plots[i-1].grid.grid_line_alpha=0.1
+        plots[i-1].xaxis.axis_label = 'Date'
+        plots[i-1].yaxis.axis_label = 'Price'
+        
+        y = df[list(df)[i]]
+        #print y
+        x = df['date']
+        #print df['date']
+        
+        plots[i-1].line(datetime(x), y, color=colors[i-1], legend = list(df)[i])
         
     p = hplot(*plots)
       
