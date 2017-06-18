@@ -1,12 +1,13 @@
 <!doctype html>
 <html>
+   <head> 
+    {{ plot_script|indent(4)|safe }}
+       
+   </head>
+    
    <body>
    
       <h1>Your name is: {{ name }} </h1>
-      <h1>cp is: {{ cp }} </h1>
-      <h1>acp is: {{ acp }} </h1>
-      <h1>op is: {{ op }} </h1>
-      <h1>aop is: {{ aop }} </h1>
-      
+    {{ plot_div|indent(4)|safe }}  
    </body>
 </html>

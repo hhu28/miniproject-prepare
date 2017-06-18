@@ -1,9 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for
-#from bokeh.util.string import encode_utf8
 import requests
 import json
 import simplejson
 import pandas as pd
+
+import numpy as np
+from bokeh.layouts import gridplot
+from bokeh.plotting import figure, show, output_file
 #from form import SiteForm
 
 #from __future__ import print_function
@@ -60,7 +63,7 @@ def input():
     
     # get webpage:
     web = 'https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?ticker='+ name + '&qopts.columns=date' + items +'&api_key=vE8zyFxDsKyf5NnGyDdC'
-    print web
+    #print web
     
     # get data
     r = requests.get(web)
@@ -74,56 +77,39 @@ def input():
     
     # convert to dataframe
     df = pd.DataFrame(datadict['data'],  columns= names)
-    print list(df)
-    return 
-#redirect(url_for('plot', name=name))
-                            #cp = cp, acp=acp, op = op, aop=aop))
-    #return render_template("input.html", name = name, cp = cp, acp=acp, op = op, aop=aop)
-    
-@app.route('/plot')
+    #print list(df)
+    return redirect(url_for('plot', name=name, df = df))
+
+
+@app.route('/plot', methods=['GET','POST'])  
 def plot():
     name = request.args.get('name')
-    cp = request.args.get('cp')
-    acp = request.args.get('acp')
-    op = request.args.get('op')
-    aop = request.args.get('aop')
+    df = request.args.get('df')
     
-    if name == None:
-        name = 'fb'
-    return 
-#render_template("plot.html", name=name, cp = cp, acp=acp, op = op, aop=aop)
+    def datetime(x):
+        return np.array(x, dtype=np.datetime64)
 
+    p1 = figure(x_axis_type="datetime", title="Stock Closing Prices")
+    p1.grid.grid_line_alpha=0.3
+    p1.xaxis.axis_label = 'Date'
+    p1.yaxis.axis_label = 'Price'
 
+    p1.line(datetime(AAPL['date']), AAPL['adj_close'], color='#A6CEE3', legend='AAPL')
+    p1.line(datetime(GOOG['date']), GOOG['adj_close'], color='#B2DF8A', legend='GOOG')
+    p1.line(datetime(IBM['date']), IBM['adj_close'], color='#33A02C', legend='IBM')
+    p1.line(datetime(MSFT['date']), MSFT['adj_close'], color='#FB9A99', legend='MSFT')
+    p1.legend.location = "top_left"
 
+    aapl = np.array(AAPL['adj_close'])
+    aapl_dates = np.array(AAPL['date'], dtype=np.datetime64)
 
-#@app.route('/show', methods=['GET'])
-#def show():
-#  return render_template('index.html', name = request.args.get('name'))
-
-
-
-
-  #render_template('index.html')
-  #getinput()
-  #extractData()
-  #return redirect('/index')
-  #getinput()
-  #extractData()
-  #if request.method == 'POST':
-    #name = request.form['name']
-    #print 'name is:', name
-
-    #flash('Success' + name)
+    window_size = 30
+    window = np.ones(window_size)/float(window_size)
+    aapl_avg = np.convolve(aapl, window, 'same')
     
-    #return 
-  #html = render_template('index.html')
-
-  #return render_template('index.html', form=form)
-
-#@app.route('/index')
-#def index():
-#  return render_template('index.html') 
+    script, div = components(p1)
+    
+    return render_template("plot.html", name=name)
   
 if __name__ == '__main__':
-  #app.debug(True)
   app.run(port=33507, host='0.0.0.0')
