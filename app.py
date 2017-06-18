@@ -7,11 +7,17 @@ import pandas as pd
 import numpy as np
 from bokeh.layouts import gridplot
 from bokeh.plotting import figure, show, output_file
+from bokeh.embed import components
+from bokeh.util.string import encode_utf8
+from bokeh.io import hplot
+
 #from form import SiteForm
 
 #from __future__ import print_function
 
 app = Flask(__name__)
+app.config['DEBUG'] = True
+
 #app.config.from_object(__name__)
 #app.config['SECRET_KEY'] = '7d441f27d441f27567d441f2b6176a'
 
@@ -67,10 +73,10 @@ def input():
 def plot():
     name = request.args.get('name')
     items = request.args.get('items')
-    print items
+    #print items
     # get webpage:
     web = 'https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?ticker='+ name + '&qopts.columns=date' + items +'&api_key=vE8zyFxDsKyf5NnGyDdC'
-    print web
+    #print web
     
     # get data
     r = requests.get(web)
@@ -84,10 +90,9 @@ def plot():
     
     # convert to dataframe
     df = pd.DataFrame(datadict['data'],  columns= names)
-    print list(df)
-    
-        
-        # check if the post request has the file part
+         
+    #print df['close']
+    # check if the post request has the file part
      #name = request.args.get('name')
     #df = request.files['file']
     #df = pd.DataFrame(df)
@@ -97,21 +102,36 @@ def plot():
     def datetime(x):
         return np.array(x, dtype=np.datetime64)
 
-    p1 = figure(title="Stock Prices")
-    p1.grid.grid_line_alpha=0.3
-    p1.xaxis.axis_label = 'Date'
-    p1.yaxis.axis_label = 'Price'
+    #p1 = figure(x_axis_type="datetime", title="")
+    #p1.grid.grid_line_alpha=0.3
+    #p1.xaxis.axis_label = 'Date'
+    #p1.yaxis.axis_label = 'Price'
 
+    
+    colors = ['#A6CEE3', '#B2DF8A', '#33A02C', '#FB9A99']
+    
+    plots = []
+    
     for i in range(1,len(list(df))):
-        p1.line(df['date'], df['open'])
+        plots[i-1].grid.grid_line_alpha=0.3
+        plots[i-1].xaxis.axis_label = 'Date'
+        p1ots[i-1].yaxis.axis_label = 'Price'
+        
+        plots[i-1] = figure(x_axis_type="datetime", title=list(df)[i])
+        plots[i-1].line(df['date'], df[list(df)[i]], color=colors[i-1], legend = list(df)[i])
+        
+    p = hplot(*plots)
+      
+    #p1.line(datetime(df['date']), df['close'])
     
-    p1.legend.location = "top_left"
+    #p1.legend.location = "top_left"
 
-    window_size = 30
+    #window_size = 30
     
-    #script, div = components(p1)
+    script, div = components(p)
     
-    return render_template("plot.html", name=name)
+    return encode_utf8(render_template("plot.html", name=name, script = script, div=div))
   
 if __name__ == '__main__':
-  app.run(port=33507, host='0.0.0.0')
+  #port = int(os.environ.get("PORT", 33507))
+  app.run(host='0.0.0.0', port=33507)

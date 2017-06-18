@@ -1,12 +1,18 @@
 <!doctype html>
 <html>
    <head> 
-    {{ plot_script|indent(4)|safe }}
+    <meta charset='utf-8' />
+    <title>Bokeh Scatter Plots</title>
+
+    <link rel="stylesheet" href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.6.min.css" type="text/css" />
+    <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.6.min.js"></script>
+
+    {{ script|indent(4)|safe }}
        
    </head>
     
    <body>
-      <h1>Your name is: {{ name }} </h1>
-    {{ plot_div|indent(4)|safe }}  
+    <h1> Your name is {{ name }} </h1> 
+    {{ div|indent(4)|safe }}  
    </body>
 </html>
