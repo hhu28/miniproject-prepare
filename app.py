@@ -49,21 +49,35 @@ def index():
 def input():
   #form = SiteForm(request.form)
   if request.method == 'POST':
-    name = request.form['name']
+    name = request.form['name']    
     if name == '':
       name = 'fb'
-    if request.form['cp'] == "on":
-      cp = 'cp'
-    else:
-      cp = 'no input'
-    if request.form['acp'] == "on":
-      acp = 'acp'
-    if request.form['op'] == "on":
-      op = 'op'
-    if request.form['aop'] == "on":
-      aop = 'aop'
-      
-    return redirect(url_for('plot', name=name, cp = cp, acp=acp, op = op, aop=aop))
+    selected = request.form.getlist('price')
+    
+    items = ''
+    for i in range(len(selected)):
+        items = items + ',' + selected[i]
+    
+    # get webpage:
+    web = 'https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?ticker='+ name + '&qopts.columns=date' + items +'&api_key=vE8zyFxDsKyf5NnGyDdC'
+    print web
+    
+    # get data
+    r = requests.get(web)
+    jdata = simplejson.dumps(r.json())
+    datadict = simplejson.loads(jdata)['datatable']
+    
+    #get column names 
+    names = []
+    for i in range(len(datadict['columns'])):
+        names.append(datadict['columns'][i]['name']) 
+    
+    # convert to dataframe
+    df = pd.DataFrame(datadict['data'],  columns= names)
+    print list(df)
+    return 
+#redirect(url_for('plot', name=name))
+                            #cp = cp, acp=acp, op = op, aop=aop))
     #return render_template("input.html", name = name, cp = cp, acp=acp, op = op, aop=aop)
     
 @app.route('/plot')
@@ -76,7 +90,8 @@ def plot():
     
     if name == None:
         name = 'fb'
-    return render_template("plot.html", name=name, cp = cp, acp=acp, op = op, aop=aop)
+    return 
+#render_template("plot.html", name=name, cp = cp, acp=acp, op = op, aop=aop)
 
 
 
